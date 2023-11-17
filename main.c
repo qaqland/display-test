@@ -25,17 +25,20 @@ int main(int argc, char *argv[]) {
   if (argc > 1) {
     printf("display-test %s\n", VERSION); // VERSION is defined in Makefile
     printf("Test your display with colors and lines.\n");
-    printf("Usage: %s\n", argv[0]);
+    printf("Usage: SDL_VIDEODRIVER=wayland %s\n", argv[0]);
     return 1;
   }
 
   SDL_Init(SDL_INIT_EVERYTHING);
-
-  SDL_Window *window = SDL_CreateWindow(
-      "Display Test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 100,
-      200, SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_FULLSCREEN_DESKTOP);
+  // set flag to SDL_WINDOW_FULLSCREEN_DESKTOP will cause 100 200 window size
+  SDL_Window *window = SDL_CreateWindow("Display Test", SDL_WINDOWPOS_UNDEFINED,
+                                        SDL_WINDOWPOS_UNDEFINED, 100, 200,
+                                        SDL_WINDOW_FULLSCREEN);
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
   int width, height;
+
+  SDL_RenderClear(renderer);
+  SDL_RenderPresent(renderer);
 
   SDL_GetWindowSize(window, &width, &height);
   SDL_Log("Window created: %dx%d", width, height);
@@ -44,6 +47,7 @@ int main(int argc, char *argv[]) {
 
   bool quit = false;
   int stage = 0;
+  bool commit = true;
   int size = gcd(width, height);
   SDL_Event event;
 
@@ -51,8 +55,14 @@ int main(int argc, char *argv[]) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         quit = true;
+        break;
+      }
+      if (event.type == SDL_MOUSEBUTTONDOWN) {
+        commit = true;
+        stage++;
       }
       if (event.type == SDL_KEYDOWN) {
+        commit = true;
         switch (event.key.keysym.sym) {
         // debug
         case SDLK_d:
@@ -76,6 +86,15 @@ int main(int argc, char *argv[]) {
           break;
         }
       }
+    }
+
+    if (commit) {
+      // clear for next frame
+      commit = false;
+    } else {
+      // do not update screen
+      SDL_Delay(100);
+      continue;
     }
 
     switch (stage) {
