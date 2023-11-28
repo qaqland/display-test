@@ -30,39 +30,36 @@ int main(int argc, char *argv[]) {
   }
 
   SDL_Init(SDL_INIT_EVERYTHING);
-  // set flag to SDL_WINDOW_FULLSCREEN_DESKTOP will cause 100 200 window size
-  SDL_Window *window = SDL_CreateWindow("Display Test", SDL_WINDOWPOS_UNDEFINED,
-                                        SDL_WINDOWPOS_UNDEFINED, 100, 200,
-                                        SDL_WINDOW_FULLSCREEN);
+
+  SDL_DisplayMode mode;
+  SDL_GetDesktopDisplayMode(0, &mode);
+  SDL_Log("desktop display mode: %dx%d", mode.w, mode.h);
+
+  int width = mode.w;
+  int height = mode.h;
+
+  // set flag to SDL_WINDOW_FULLSCREEN will get wrong size
+  SDL_Window *window = SDL_CreateWindow("Display Test", 0, 0, width, height,
+                                        SDL_WINDOW_FULLSCREEN_DESKTOP);
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
-  int width, height;
-
-  SDL_RenderClear(renderer);
-  SDL_RenderPresent(renderer);
-
-  SDL_GetWindowSize(window, &width, &height);
-  SDL_Log("Window created: %dx%d", width, height);
-
   SDL_ShowCursor(SDL_DISABLE);
 
-  bool quit = false;
-  int stage = 0;
-  bool commit = true;
-  int size = gcd(width, height);
-  SDL_Event event;
+  int size = gcd(width, height) / 10;
+  SDL_Log("window now: %dx%d, size: %d", width, height, size);
 
+  int stage = 0;
+  bool quit = false;
+  SDL_Event event;
   while (!quit) {
-    while (SDL_PollEvent(&event)) {
-      if (event.type == SDL_QUIT) {
+    if (SDL_WaitEvent(&event)) {
+      switch (event.type) {
+      case SDL_QUIT:
         quit = true;
         break;
-      }
-      if (event.type == SDL_MOUSEBUTTONDOWN) {
-        commit = true;
+      case SDL_MOUSEBUTTONDOWN:
         stage++;
-      }
-      if (event.type == SDL_KEYDOWN) {
-        commit = true;
+        break;
+      case SDL_KEYDOWN:
         switch (event.key.keysym.sym) {
         // debug
         case SDLK_d:
@@ -86,15 +83,6 @@ int main(int argc, char *argv[]) {
           break;
         }
       }
-    }
-
-    if (commit) {
-      // clear for next frame
-      commit = false;
-    } else {
-      // do not update screen
-      SDL_Delay(100);
-      continue;
     }
 
     switch (stage) {
@@ -139,23 +127,36 @@ int main(int argc, char *argv[]) {
       SDL_RenderClear(renderer);
       break;
     case 8:
-      // gray level
+      // gray image 1
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
       SDL_RenderClear(renderer);
       for (int g = 0; g < 256; g++) {
         SDL_SetRenderDrawColor(renderer, g, g, g, 255);
-        int column = g / 16;
-        int row = g % 16;
-        float rectWidth = (float)width / 16;
-        float rectHeight = (float)height / 16;
-        SDL_FRect rect = {.x = row * rectWidth,
-                          .y = column * rectHeight,
-                          .w = rectWidth,
-                          .h = rectHeight};
+        int num_column = g / 16;
+        int num_row = g % 16;
+        float rect_width = (float)width / 16;
+        float rect_height = (float)height / 16;
+        SDL_FRect rect = {.x = num_column * rect_width,
+                          .y = num_row * rect_height,
+                          .w = rect_width,
+                          .h = rect_height};
         SDL_RenderFillRectF(renderer, &rect);
       }
       break;
     case 9:
+      // gray image 2
+      SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+      SDL_RenderClear(renderer);
+      for (int g = 0; g < 256; g++) {
+        SDL_SetRenderDrawColor(renderer, g, g, g, 255);
+        float rect_width = (float)width / 256;
+        SDL_FRect rect = {
+            .x = g * rect_width, .y = 0, .w = rect_width, .h = height};
+        SDL_RenderFillRectF(renderer, &rect);
+      }
+      break;
+    case 10:
+      // lines
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
       SDL_RenderClear(renderer);
       SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -170,7 +171,7 @@ int main(int argc, char *argv[]) {
         SDL_RenderDrawLine(renderer, i, 0, i, height);
       }
       break;
-    case 10:
+    case 11:
       // 45 degree lines
       SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
       SDL_RenderClear(renderer);
@@ -185,7 +186,7 @@ int main(int argc, char *argv[]) {
     default:
       // quit
       quit = true;
-      continue;
+      break;
     }
     SDL_RenderPresent(renderer);
   }
