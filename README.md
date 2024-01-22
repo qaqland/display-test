@@ -9,6 +9,12 @@ Test your display with colors and lines.
 - color level \* 7
 - lines \* 2
 
+## Build
+
+Only need `libsdl2-dev`, `libsdl2-devel` or `sdl2-dev`
+
+Run `make` to build it.
+
 ## Usage
 
 see `display-test -h`
@@ -25,3 +31,4 @@ SDL_VIDEODRIVER=wayland ./display-test
 apk add sdl2-dev bear
 bear -- make
 ```
+
