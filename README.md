@@ -1,31 +1,23 @@
 # Display Test
 
+> [!WARNING]  
+> **PHOTOSENSITIVITY/EPILEPSY SEIZURES**
+
 Test your display with colors and lines.
 
-## TODO
+- color pure \* 8
+- color level \* 7
+- lines \* 2
 
-- Linux
-  - Wayland
-  - X11
-  - FB
-- mouse support
-  - ~~click~~
-  - wheel
-- ~~CPU cost~~
-- more tests
-  - http://www.lagom.nl/lcd-test/sharpness.php
-  - https://www.color.org/browsertest.xalter
+## Usage
+
+see `display-test -h`
 
 ## Wayland
 
 ```
 SDL_VIDEODRIVER=wayland ./display-test
 ```
-
-## Keys
-
-- up/down/left/right/space/escape/q(uit)
-- "d" for debug only, no other meaning.
 
 ## Scripts for Development
 

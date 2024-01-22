@@ -1,12 +1,17 @@
 TARGET = display-test
-VERSION = 0.0.1
+VERSION = 0.0.2
+
+SDL2 = $(shell pkg-config --cflags --libs sdl2)
 CFLAGS = -Wall -Wextra -Werror -std=c99
 
-DEPS = $(shell pkg-config --cflags --libs sdl2)
+all: $(TARGET)
 
-all: main.c
-	cc -o $(TARGET) $< $(DEPS) $(CFLAGS) -DVERSION=\"$(VERSION)\"
+$(TARGET): main.c
+	cc -o $@ $< $(SDL2) $(CFLAGS) -DVERSION=\"$(VERSION)\"
 
-.PHONY: clean
+.PHONY: clean, install
+
+install:
+	@echo "Please move $(TARGET) to your PATH **manually**."
 clean:
 	rm -f $(TARGET)
